@@ -1,23 +1,51 @@
-import { Box, Button, Container, Flex, Heading, HStack, Image, Input, SimpleGrid, Text, VStack } from "@chakra-ui/react";
+import { Box, Button, Container, Flex, Heading, HStack, Image, Input, SimpleGrid, Text, VStack, Checkbox, CheckboxGroup, Stack, Slider, SliderTrack, SliderFilledTrack, SliderThumb } from "@chakra-ui/react";
 import { FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa";
 import { useState } from "react";
 
 const sampleProducts = [
-  { id: 1, name: "Smartphone", price: "$699", image: "https://via.placeholder.com/150" },
-  { id: 2, name: "Laptop", price: "$999", image: "https://via.placeholder.com/150" },
-  { id: 3, name: "Smartwatch", price: "$199", image: "https://via.placeholder.com/150" },
+  { id: 1, name: "Smartphone", price: 699, brand: "BrandA", type: "Electronics", image: "https://via.placeholder.com/150" },
+  { id: 2, name: "Laptop", price: 999, brand: "BrandB", type: "Electronics", image: "https://via.placeholder.com/150" },
+  { id: 3, name: "Smartwatch", price: 199, brand: "BrandA", type: "Wearables", image: "https://via.placeholder.com/150" },
+  { id: 4, name: "Headphones", price: 149, brand: "BrandC", type: "Accessories", image: "https://via.placeholder.com/150" },
+  { id: 5, name: "Tablet", price: 499, brand: "BrandB", type: "Electronics", image: "https://via.placeholder.com/150" },
 ];
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredProducts, setFilteredProducts] = useState(sampleProducts);
+  const [selectedBrands, setSelectedBrands] = useState([]);
+  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [priceRange, setPriceRange] = useState([0, 1000]);
 
   const handleSearchChange = (event) => {
     const query = event.target.value.toLowerCase();
     setSearchQuery(query);
+    filterProducts(query, selectedBrands, selectedTypes, priceRange);
+  };
+
+  const handleBrandChange = (brands) => {
+    setSelectedBrands(brands);
+    filterProducts(searchQuery, brands, selectedTypes, priceRange);
+  };
+
+  const handleTypeChange = (types) => {
+    setSelectedTypes(types);
+    filterProducts(searchQuery, selectedBrands, types, priceRange);
+  };
+
+  const handlePriceChange = (value) => {
+    setPriceRange(value);
+    filterProducts(searchQuery, selectedBrands, selectedTypes, value);
+  };
+
+  const filterProducts = (query, brands, types, price) => {
     setFilteredProducts(
       sampleProducts.filter(product =>
-        product.name.toLowerCase().includes(query)
+        product.name.toLowerCase().includes(query) &&
+        (brands.length === 0 || brands.includes(product.brand)) &&
+        (types.length === 0 || types.includes(product.type)) &&
+        product.price >= price[0] &&
+        product.price <= price[1]
       )
     );
   };
@@ -51,6 +79,49 @@ const Index = () => {
         <Button colorScheme="teal" size="lg">Shop Now</Button>
       </Box>
 
+      {/* Filters Section */}
+      <Box py={10}>
+        <Heading size="xl" textAlign="center" mb={10}>Filter Products</Heading>
+        <Flex justifyContent="center" mb={10}>
+          <VStack spacing={5} align="start">
+            <Heading size="md">Brand</Heading>
+            <CheckboxGroup onChange={handleBrandChange}>
+              <Stack spacing={2} direction="column">
+                <Checkbox value="BrandA">BrandA</Checkbox>
+                <Checkbox value="BrandB">BrandB</Checkbox>
+                <Checkbox value="BrandC">BrandC</Checkbox>
+              </Stack>
+            </CheckboxGroup>
+
+            <Heading size="md">Type</Heading>
+            <CheckboxGroup onChange={handleTypeChange}>
+              <Stack spacing={2} direction="column">
+                <Checkbox value="Electronics">Electronics</Checkbox>
+                <Checkbox value="Wearables">Wearables</Checkbox>
+                <Checkbox value="Accessories">Accessories</Checkbox>
+              </Stack>
+            </CheckboxGroup>
+
+            <Heading size="md">Price Range</Heading>
+            <Slider
+              aria-label="price-range-slider"
+              defaultValue={[0, 1000]}
+              min={0}
+              max={1000}
+              step={50}
+              onChangeEnd={handlePriceChange}
+            >
+              <SliderTrack>
+                <SliderFilledTrack />
+              </SliderTrack>
+              <SliderThumb boxSize={6} index={0} />
+              <SliderThumb boxSize={6} index={1} />
+            </Slider>
+            <Text>Price: ${priceRange[0]} - ${priceRange[1]}</Text>
+          </VStack>
+        </Flex>
+      </Box>
+
       {/* Products Section */}
       <Box py={10}>
         <Heading size="xl" textAlign="center" mb={10}>Featured Products</Heading>
@@ -59,7 +130,7 @@ const Index = () => {
             <Box key={product.id} borderWidth="1px" borderRadius="lg" overflow="hidden" p={5} textAlign="center">
               <Image src={product.image} alt={product.name} mb={4} />
               <Heading size="md" mb={2}>{product.name}</Heading>
-              <Text fontSize="lg" mb={4}>{product.price}</Text>
+              <Text fontSize="lg" mb={4}>${product.price}</Text>
               <Button colorScheme="teal">Add to Cart</Button>
             </Box>
           ))}
