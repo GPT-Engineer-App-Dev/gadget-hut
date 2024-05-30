@@ -1,5 +1,6 @@
-import { Box, Button, Container, Flex, Heading, HStack, Image, SimpleGrid, Text, VStack } from "@chakra-ui/react";
+import { Box, Button, Container, Flex, Heading, HStack, Image, Input, SimpleGrid, Text, VStack } from "@chakra-ui/react";
 import { FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa";
+import { useState } from "react";
 
 const sampleProducts = [
   { id: 1, name: "Smartphone", price: "$699", image: "https://via.placeholder.com/150" },
@@ -8,6 +9,19 @@ const sampleProducts = [
 ];
 
 const Index = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState(sampleProducts);
+
+  const handleSearchChange = (event) => {
+    const query = event.target.value.toLowerCase();
+    setSearchQuery(query);
+    setFilteredProducts(
+      sampleProducts.filter(product =>
+        product.name.toLowerCase().includes(query)
+      )
+    );
+  };
+
   return (
     <Container maxW="container.xl" p={0}>
       {/* Navigation Bar */}
@@ -19,6 +33,15 @@ const Index = () => {
           <Button variant="link" color="white">About Us</Button>
           <Button variant="link" color="white">Contact</Button>
         </HStack>
+        <Input
+          placeholder="Search products..."
+          value={searchQuery}
+          onChange={handleSearchChange}
+          bg="white"
+          color="black"
+          borderRadius="md"
+          width="300px"
+        />
       </Flex>
 
       {/* Hero Section */}
@@ -32,7 +55,7 @@ const Index = () => {
       <Box py={10}>
         <Heading size="xl" textAlign="center" mb={10}>Featured Products</Heading>
         <SimpleGrid columns={{ base: 1, md: 3 }} spacing={10}>
-          {sampleProducts.map(product => (
+          {filteredProducts.map(product => (
             <Box key={product.id} borderWidth="1px" borderRadius="lg" overflow="hidden" p={5} textAlign="center">
               <Image src={product.image} alt={product.name} mb={4} />
               <Heading size="md" mb={2}>{product.name}</Heading>
